@@ -1,7 +1,7 @@
 import { atom, selector, useRecoilCallback } from 'recoil';
 import { rfcIndex } from './rfcIndex';
 import { detectRFC, generateDot, parseAll } from './parser';
-import { searchOption } from '../components/SideBar';
+import { directionState, searchOption } from '../components/SideBar';
 
 const rfcListState = selector({
     key: "rfcList",
@@ -16,7 +16,6 @@ export const searchResultState = selector({
     get: ({get}) => {
         const sources = get(rfcListState)
         const options = get(searchOption)
-        console.log({options})
         return detectRFC(sources, options)
     }
 })
@@ -35,7 +34,8 @@ export const canGenerate = selector({
     key: "canGenerate",
     get: (({get}) => {
         const currentSearchResult = get(searchResultState)
-        return get(lastUpdate) !== JSON.stringify(currentSearchResult)
+        const direction = get(directionState)
+        return get(lastUpdate) !== JSON.stringify(currentSearchResult) + JSON.stringify({direction})
     })
 })
 
@@ -43,7 +43,8 @@ export function useUpdateGraphvizSource() {
     return useRecoilCallback(({snapshot, set}) => async () => {
         const rfcSrc = await snapshot.getPromise(rfcListState)
         const searchResult = await snapshot.getPromise(searchResultState)
-        set(graphvizSourceState, generateDot(searchResult, rfcSrc))
-        set(lastUpdate, JSON.stringify(searchResult))
+        const direction = await snapshot.getPromise(directionState)
+        set(graphvizSourceState, generateDot(searchResult, rfcSrc, direction))
+        set(lastUpdate, JSON.stringify(searchResult) + JSON.stringify({direction}))
     }, []);
 }

@@ -164,10 +164,11 @@ describe("detectRFC", () => {
 })
 
 const expectedDot = `digraph G {
+    rankdir="TB"
     node [shape=box];
-    RFC1000 [label="RFC-1000\\ntitle1\\n(1980)"];
-    RFC1100 [label="RFC-1100\\ntitle2\\n(1990)"];
-    RFC1200 [label="RFC-1200\\ntitle3\\n(2000)"];
+    RFC1000 [label="RFC-1000(1980)\\ntitle1"];
+    RFC1100 [label="RFC-1100(1990)\\ntitle2"];
+    RFC1200 [label="RFC-1200(2000)\\ntitle3"];
 
     // Updates
     edge [style="dotted"];
@@ -203,6 +204,6 @@ test("generateDot", () => {
             published: 200001,
             updates: [], updatedBy: [], obsoletes: [], obsoletedBy: [],
         }],
-    ]))
+    ]), false)
     expect(src).toBe(expectedDot)
 })

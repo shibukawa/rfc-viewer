@@ -103,7 +103,7 @@ export function parseAll(src: string): Map<number, RFC> {
     return result
 }
 
-type Opts = {
+export type Opts = {
     from: number | null
     to: number | null
     includes: string
@@ -131,10 +131,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
     const excludes = opts.excludes !== "" ? opts.excludes.split(/,\s*/).map(s => s.toLocaleLowerCase()) : []
 
     for (const [num, value] of src.entries()) {
-        if (opts.from !== null && num < opts.from) {
-            continue
-        }
-        if (opts.to !== null && num > opts.to) {
+        if ((opts.from !== null && num < opts.from) || (opts.to !== null && num > opts.to)) {
             continue
         }
         const numStr = String(num)
@@ -161,6 +158,9 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
         if (opts.searchAncestors) {
             for (const num of checks) {
                 for (const parentNum of src.get(num)?.updates || []) {
+                    if ((opts.from !== null && parentNum < opts.from) || (opts.to !== null && parentNum > opts.to)) {
+                        continue
+                    }
                     pushIfNotExists(updates, [parentNum, num])
                     if (!checked.has(parentNum)) {
                         checkNext.push(parentNum)
@@ -169,6 +169,9 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
                     }
                 }
                 for (const parentNum of src.get(num)?.obsoletes || []) {
+                    if ((opts.from !== null && parentNum < opts.from) || (opts.to !== null && parentNum > opts.to)) {
+                        continue
+                    }
                     pushIfNotExists(obsoletes, [parentNum, num])
                     if (!checked.has(parentNum)) {
                         checkNext.push(parentNum)
@@ -181,6 +184,9 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
         if (opts.searchDescendants) {
             for (const num of checks) {
                 for (const childNum of src.get(num)?.updatedBy || []) {
+                    if ((opts.from !== null && childNum < opts.from) || (opts.to !== null && childNum > opts.to)) {
+                        continue
+                    }
                     pushIfNotExists(updates,[num, childNum])
                     if (!checked.has(childNum)) {
                         checkNext.push(childNum)
@@ -189,6 +195,9 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
                     }
                 }
                 for (const childNum of src.get(num)?.obsoletedBy || []) {
+                    if ((opts.from !== null && childNum < opts.from) || (opts.to !== null && childNum > opts.to)) {
+                        continue
+                    }
                     pushIfNotExists(obsoletes,[num, childNum])
                     if (!checked.has(childNum)) {
                         checkNext.push(childNum)
@@ -207,10 +216,10 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
     }
 }
 
-export function generateDot(searchResult: Result, rfcs: Map<number, RFC>): string {
+export function generateDot(searchResult: Result, rfcs: Map<number, RFC>, direction: boolean): string {
     const nodes = searchResult.rfcs.map(num => {
         const rfc = rfcs.get(num)
-        return `    RFC${num} [label="RFC-${num}\\n${rfc?.title}\\n(${String(rfc?.published).slice(0, 4)})"];`
+        return `    RFC${num} [label="RFC-${num}(${String(rfc?.published).slice(0, 4)})\\n${rfc?.title.replace(/"/g, '\\"')}"];`
     })
     const updates = searchResult.updates.map(([from, to]) => {
         return `    RFC${from} -> RFC${to} [label="update"];`
@@ -220,6 +229,7 @@ export function generateDot(searchResult: Result, rfcs: Map<number, RFC>): strin
     })
 
     return `digraph G {
+    rankdir="${direction ? "LR" : "TB"}"
     node [shape=box];
 ${nodes.join("\n")}
 
