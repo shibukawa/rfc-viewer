@@ -104,6 +104,22 @@ describe("detectRFC", () => {
             }
         },
         {
+            name: "exclude during search ancestors/descendants",
+            opts: {
+                includes: "2616",
+                excludes: "Hypertext",
+                from: null,
+                to: null,
+                searchAncestors: false,
+                searchDescendants: true,
+            },
+            expects: {
+                rfcs: [2616, 2817, 5785, 6585, 8615],
+                updates: [[2616, 2817], [2616, 5785], [2616, 6585]],
+                obsoletes: [[5785, 8615]],
+            }
+        },
+        {
             name: "search one (from/to)",
             opts: {
                 includes: "HTTP",

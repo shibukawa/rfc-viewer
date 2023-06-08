@@ -130,6 +130,16 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
     const includes = opts.includes !== "" ? opts.includes.split(/,\s*/).map(s => s.toLocaleLowerCase()) : []
     const excludes = opts.excludes !== "" ? opts.excludes.split(/,\s*/).map(s => s.toLocaleLowerCase()) : []
 
+    const shouldNotAdd = (num: number) => {
+        if ((opts.from !== null && num < opts.from) || (opts.to !== null && num > opts.to)) {
+            return true
+        }
+        const numStr = String(num)
+        const { title } = src.get(num) as RFC
+        const lowTitle = title.toLocaleLowerCase()
+        return excludes.includes(numStr) || excludes.some(e => lowTitle.includes(e))
+    }
+
     for (const [num, value] of src.entries()) {
         if ((opts.from !== null && num < opts.from) || (opts.to !== null && num > opts.to)) {
             continue
@@ -158,7 +168,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
         if (opts.searchAncestors) {
             for (const num of checks) {
                 for (const parentNum of src.get(num)?.updates || []) {
-                    if ((opts.from !== null && parentNum < opts.from) || (opts.to !== null && parentNum > opts.to)) {
+                    if (shouldNotAdd(parentNum)) {
                         continue
                     }
                     pushIfNotExists(updates, [parentNum, num])
@@ -169,7 +179,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
                     }
                 }
                 for (const parentNum of src.get(num)?.obsoletes || []) {
-                    if ((opts.from !== null && parentNum < opts.from) || (opts.to !== null && parentNum > opts.to)) {
+                    if (shouldNotAdd(parentNum)) {
                         continue
                     }
                     pushIfNotExists(obsoletes, [parentNum, num])
@@ -184,7 +194,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
         if (opts.searchDescendants) {
             for (const num of checks) {
                 for (const childNum of src.get(num)?.updatedBy || []) {
-                    if ((opts.from !== null && childNum < opts.from) || (opts.to !== null && childNum > opts.to)) {
+                    if (shouldNotAdd(childNum)) {
                         continue
                     }
                     pushIfNotExists(updates,[num, childNum])
@@ -195,7 +205,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
                     }
                 }
                 for (const childNum of src.get(num)?.obsoletedBy || []) {
-                    if ((opts.from !== null && childNum < opts.from) || (opts.to !== null && childNum > opts.to)) {
+                    if (shouldNotAdd(childNum)) {
                         continue
                     }
                     pushIfNotExists(obsoletes,[num, childNum])
