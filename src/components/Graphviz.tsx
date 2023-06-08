@@ -20,9 +20,7 @@ export interface IGraphvizProps {
 }
 
 const defaultOptions: GraphvizOptions = {
-  fit: false,
-  height: 500,
-  width: 500,
+  fit: true,
   zoom: false,
 };
 
