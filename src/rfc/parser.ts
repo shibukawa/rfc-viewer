@@ -219,7 +219,7 @@ export function detectRFC(src: Map<number, RFC>, opts: Opts): Result {
 export function generateDot(searchResult: Result, rfcs: Map<number, RFC>, direction: boolean): string {
     const nodes = searchResult.rfcs.map(num => {
         const rfc = rfcs.get(num)
-        return `    RFC${num} [label="RFC-${num}(${String(rfc?.published).slice(0, 4)})\\n${rfc?.title.replace(/"/g, '\\"')}"];`
+        return `    RFC${num} [label="RFC-${num}(${String(rfc?.published).slice(0, 4)})\\n${rfc?.title.replace(/"/g, '\\"')}" URL="https://www.rfc-editor.org/rfc/rfc${num}"];`
     })
     const updates = searchResult.updates.map(([from, to]) => {
         return `    RFC${from} -> RFC${to} [label="update"];`

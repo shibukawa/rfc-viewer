@@ -166,9 +166,9 @@ describe("detectRFC", () => {
 const expectedDot = `digraph G {
     rankdir="TB"
     node [shape=box];
-    RFC1000 [label="RFC-1000(1980)\\ntitle1"];
-    RFC1100 [label="RFC-1100(1990)\\ntitle2"];
-    RFC1200 [label="RFC-1200(2000)\\ntitle3"];
+    RFC1000 [label="RFC-1000(1980)\\ntitle1" URL="https://www.rfc-editor.org/rfc/rfc1000"];
+    RFC1100 [label="RFC-1100(1990)\\ntitle2" URL="https://www.rfc-editor.org/rfc/rfc1100"];
+    RFC1200 [label="RFC-1200(2000)\\ntitle3" URL="https://www.rfc-editor.org/rfc/rfc1200"];
 
     // Updates
     edge [style="dotted"];
